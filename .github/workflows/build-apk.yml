@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java (dibutuhkan Android build)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -42,12 +42,23 @@ jobs:
         run: cordova plugin add nodejs-mobile-cordova
 
       - name: Build APK (debug, sudah bisa langsung diinstall)
-        run: cordova build android
+        run: cordova build android --verbose -- --packageType=apk
 
       - name: Cari lokasi file APK
         id: find_apk
         run: |
-          APK_PATH=$(find platforms/android -name "*.apk" | head -n 1)
+          set -e
+          echo "Mencari file .apk di platforms/android ..."
+          APK_PATH=$(find platforms/android -type f -name "*.apk" | sort | head -n 1)
+
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::Tidak ada file .apk yang ditemukan. Build kemungkinan gagal diam-diam atau menghasilkan format lain (mis. .aab)."
+            echo "Isi folder build hasil Gradle (untuk debugging):"
+            find platforms/android -type f \( -name "*.apk" -o -name "*.aab" \) 2>/dev/null
+            find platforms/android -maxdepth 6 -type d
+            exit 1
+          fi
+
           echo "APK ditemukan di: $APK_PATH"
           echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
 
