@@ -28,6 +28,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Terima semua lisensi Android SDK
+        run: yes | sdkmanager --licenses || true
+
       - name: Install Cordova CLI
         run: npm install -g cordova
 
@@ -42,7 +45,7 @@ jobs:
         run: cordova plugin add nodejs-mobile-cordova
 
       - name: Build APK (debug, sudah bisa langsung diinstall)
-        run: cordova build android --verbose -- --packageType=apk
+        run: cordova build android --verbose
 
       - name: Cari lokasi file APK
         id: find_apk
